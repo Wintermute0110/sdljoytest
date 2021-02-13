@@ -85,13 +85,16 @@ int main(int argn, char** argv)
     //
     // Load controller mappings
     //
-    printf("Sys_InitInput: Loading gamecontrollerdb.txt\n" );
-    int num_devices = SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
-    if (num_devices < 0) {
-        printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() failed: %s\n", SDL_GetError());
-    } else {
-        printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() added %i controller maps\n", num_devices );
-    }
+		const char* db_file = SDL_getenv("SDL_GAMECONTROLLERCONFIG_FILE");
+		if (db_file) {
+			printf("Sys_InitInput: Loading %s\n", db_file);
+			int num_devices = SDL_GameControllerAddMappingsFromFile(db_file);
+			if (num_devices < 0) {
+					printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() failed: %s\n", SDL_GetError());
+			} else {
+					printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() added %i controller maps\n", num_devices );
+			}
+		}
 
     //
     // Print joystick information at startup time.
