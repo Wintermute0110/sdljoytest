@@ -180,6 +180,7 @@ int main(int argn, char** argv)
 			printf( "     buttons: %d\n", SDL_JoystickNumButtons( joy ) );
 			printf( " instance id: %d\n", SDL_JoystickInstanceID( joy ) );
 			printf( "        guid: %s\n", guid);
+			printf( "     mapping: %s\n", SDL_GameControllerMapping( gamepad ));
 		}
 	} else {
 		gamepad = NULL;
