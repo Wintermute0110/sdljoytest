@@ -60,9 +60,14 @@ void SDL2_Init_Haptic_From_Joystick(void)
 int main(int argn, char** argv)
 {
     int numJoysticks, i;
+    bool skipLoop = false;
 
     SDL_version compiled;
     SDL_version linked;
+
+    if (argn > 1 && strncmp(argv[1], "-skip_loop", 10) == 0) {
+      skipLoop = true;
+    }
 
     SDL_VERSION(&compiled);
     printf("Sys_InitInput: Compiled with SDL version %d.%d.%d\n", compiled.major, compiled.minor, compiled.patch);
@@ -202,13 +207,16 @@ int main(int argn, char** argv)
 	//
 	// Get joystick events and print information
 	//
-	int run_loop = 1;
+	int run_loop = !skipLoop;
 	SDL_Event ev;
 	
 #ifdef __SDL2_ENABLE_CONTROLLER_HOTPLUG
 	printf("SDL2: Joytick hotplug supported\n");
 #endif
-	printf("Waiting for joystick events. Press CTRL+C to exit.\n");
+	if (run_loop) {
+		printf("Waiting for joystick events. Press CTRL+C to exit.\n");
+	}
+
 	while(run_loop) {
 		// SDL_PollEvent() poll event returns inmediately if no events. It consuments 100% CPU!!!
 		// SDL_WaitEvent() waits until next event
