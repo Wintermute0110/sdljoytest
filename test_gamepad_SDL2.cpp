@@ -60,9 +60,14 @@ void SDL2_Init_Haptic_From_Joystick(void)
 int main(int argn, char** argv)
 {
     int numJoysticks, i;
+    bool skipLoop = false;
 
     SDL_version compiled;
     SDL_version linked;
+
+    if (argn > 1 && strncmp(argv[1], "-skip_loop", 10) == 0) {
+      skipLoop = true;
+    }
 
     SDL_VERSION(&compiled);
     printf("Sys_InitInput: Compiled with SDL version %d.%d.%d\n", compiled.major, compiled.minor, compiled.patch);
@@ -85,13 +90,16 @@ int main(int argn, char** argv)
     //
     // Load controller mappings
     //
-    printf("Sys_InitInput: Loading gamecontrollerdb.txt\n" );
-    int num_devices = SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
-    if (num_devices < 0) {
-        printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() failed: %s\n", SDL_GetError());
-    } else {
-        printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() added %i controller maps\n", num_devices );
-    }
+		const char* db_file = SDL_getenv("SDL_GAMECONTROLLERCONFIG_FILE");
+		if (db_file) {
+			printf("Sys_InitInput: Loading %s\n", db_file);
+			int num_devices = SDL_GameControllerAddMappingsFromFile(db_file);
+			if (num_devices < 0) {
+					printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() failed: %s\n", SDL_GetError());
+			} else {
+					printf( "Sys_InitInput: SDL_GameControllerAddMappingsFromFile() added %i controller maps\n", num_devices );
+			}
+		}
 
     //
     // Print joystick information at startup time.
@@ -180,6 +188,7 @@ int main(int argn, char** argv)
 			printf( "     buttons: %d\n", SDL_JoystickNumButtons( joy ) );
 			printf( " instance id: %d\n", SDL_JoystickInstanceID( joy ) );
 			printf( "        guid: %s\n", guid);
+			printf( "     mapping: %s\n", SDL_GameControllerMapping( gamepad ));
 		}
 	} else {
 		gamepad = NULL;
@@ -198,13 +207,16 @@ int main(int argn, char** argv)
 	//
 	// Get joystick events and print information
 	//
-	int run_loop = 1;
+	int run_loop = !skipLoop;
 	SDL_Event ev;
 	
 #ifdef __SDL2_ENABLE_CONTROLLER_HOTPLUG
 	printf("SDL2: Joytick hotplug supported\n");
 #endif
-	printf("Waiting for joystick events. Press CTRL+C to exit.\n");
+	if (run_loop) {
+		printf("Waiting for joystick events. Press CTRL+C to exit.\n");
+	}
+
 	while(run_loop) {
 		// SDL_PollEvent() poll event returns inmediately if no events. It consuments 100% CPU!!!
 		// SDL_WaitEvent() waits until next event
